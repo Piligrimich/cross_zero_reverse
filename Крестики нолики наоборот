@@ -1,0 +1,215 @@
+import random
+import pygame
+import sys
+
+
+def check_win(mas, sign):
+    zeroes = 0
+    for row in mas:
+        zeroes += row.count(0)
+
+        for i in range(len(row)-4):
+            if row[i] == sign and row[i+1] == sign and row[i+2] == sign and row[i+3] == sign and row[i+4] == sign:
+                return True
+
+    for i in range(6):
+        for col in range(10):
+            if mas[i][col] == sign and mas[i+1][col] == sign and mas[i+2][col] == sign and mas[i+3][col] == sign and mas[i+4][col] == sign:
+                return True
+
+    for i in range(6):
+        for col in range(6):
+            if mas[i][col] == sign and mas[i+1][col+1] == sign and mas[i+2][col+2] == sign and mas[i+3][col+3] == sign and mas[i+4][col+4] == sign:
+                return True
+
+    for i in range(6):
+        for col in range(9, 3, -1):
+            if mas[i][col] == sign and mas[i+1][col-1] == sign and mas[i+2][col-2] == sign and mas[i+3][col-3] == sign and mas[i+4][col-4] == sign:
+                return True
+
+    if zeroes == 0:
+        return 'Piece'
+    return False
+
+
+def gameOver(text, screen):
+    screen.fill(black)
+
+    font = pygame.font.SysFont('stxinqkai', 80)
+    text1 = font.render(text, True, white)
+
+    font = pygame.font.SysFont('stxinqkai', 30)
+    text2 = font.render('Для рестарта нажмите прробел', True, white)
+
+    text_rect = text1.get_rect()
+
+    text_x = screen.get_width() / 2 - text_rect.width / 2
+    text_y = screen.get_height() / 2 - text_rect.height / 2
+
+    text_x_2 = screen.get_width() / 2 - 155
+    text_y_2 = screen.get_height() / 2 + 100
+
+    screen.blit(text1, [text_x, text_y])
+    screen.blit(text2, [text_x_2, text_y_2])
+
+
+def computer(mas):
+    row = random.randint(0, 9)
+    col = random.randint(0, 9)
+    while mas[row][col] != 0:
+        row = random.randint(0, 9)
+        col = random.randint(0, 9)
+    return row, col
+
+
+def titles(text, screen):
+    gameOver(text, screen)
+
+
+pygame.init()
+size_block = 50
+margin = 5
+width = heigth = size_block*10 + margin*11
+size_window = (width, heigth)
+screen = pygame.display.set_mode(size_window)
+pygame.display.set_caption("Обратные крестики нолики")
+
+black = (0, 0, 0)
+red = (255, 0, 0)
+green = (0, 255, 0)
+white = (255, 255, 255)
+color_light = (170, 170, 170)
+color_dark = (100, 100, 100)
+
+mas = [[0]*10 for i in range(10)]
+
+game_over = False
+player = None
+
+width = screen.get_width()
+height = screen.get_height()
+
+smallfont = pygame.font.SysFont('Corbel', 35)
+
+text = smallfont.render('X', True, white)
+text2 = smallfont.render('O', True, white)
+
+while not player:
+
+    for ev in pygame.event.get():
+        if ev.type == pygame.QUIT:
+            pygame.quit()
+
+        if ev.type == pygame.MOUSEBUTTONDOWN:
+
+            if width / 2 + 30 <= mouse[0] <= width / 2 + 150 and height / 2 <= mouse[1] <= height / 2 + 40:
+                player = 'x'
+
+            elif width / 2 - 150 <= mouse[0] <= width / 2 - 30 and height / 2 <= mouse[1] <= height / 2 + 40:
+                player = 'o'
+
+    screen.fill((60, 25, 60))
+
+    mouse = pygame.mouse.get_pos()
+
+    if width / 2 + 30 <= mouse[0] <= width / 2 + 150 and height / 2 <= mouse[1] <= height / 2 + 40:
+        pygame.draw.rect(screen, color_light, [width / 2 + 30, height / 2, 120, 40])
+        pygame.draw.rect(screen, color_dark, [width / 2 - 150, height / 2, 120, 40])
+
+    elif width / 2 - 150 <= mouse[0] <= width / 2 - 30 and height / 2 <= mouse[1] <= height / 2 + 40:
+        pygame.draw.rect(screen, color_dark, [width / 2 + 30, height / 2, 120, 40])
+        pygame.draw.rect(screen, color_light, [width / 2 - 150, height / 2, 120, 40])
+
+    else:
+        pygame.draw.rect(screen, color_dark, [width / 2 + 30, height / 2, 120, 40])
+        pygame.draw.rect(screen, color_dark, [width / 2 - 150, height / 2, 120, 40])
+
+    screen.blit(text, (width / 2 + 80, height / 2 + 4))
+    screen.blit(text2, (width / 2 - 100, height / 2 + 4))
+
+    pygame.display.update()
+
+screen.fill(0)
+
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit(0)
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            game_over = False
+            screen.fill(0)
+            mas = [[0]*10 for i in range(10)]
+
+        elif event.type == pygame.MOUSEBUTTONDOWN and not game_over:
+            x_mouse, y_mouse = pygame.mouse.get_pos()
+            col = x_mouse // (size_block + margin)
+            row = y_mouse // (size_block + margin)
+            if mas[row][col] == 0:
+                if player == 'x':
+                    mas[row][col] = 'x'
+                    check = check_win(mas, 'x')
+                    if check == True:
+                        game_over = True
+                        titles('Игрок X проиграл', screen)
+
+                    if check == 'Piece':
+                        game_over = True
+                        titles('Ничья', screen)
+
+                    row, col = computer(mas)
+                    mas[row][col] = 'o'
+                    check = check_win(mas, 'o')
+
+                    if check == True:
+                        game_over = True
+                        titles('Игрок o проиграл', screen)
+
+                    if check == 'Piece':
+                        game_over = True
+                        titles('Ничья', screen)
+
+                elif player == 'o':
+                    mas[row][col] = 'o'
+                    check = check_win(mas, 'o')
+
+                    if check == True:
+                        game_over = True
+                        titles('Игрок o проиграл', screen)
+
+                    if check == 'Piece':
+                        game_over = True
+                        titles('Ничья', screen)
+
+                    row, col = computer(mas)
+                    mas[row][col] = 'x'
+                    check = check_win(mas, 'x')
+
+                    if check == True:
+                        game_over = True
+                        titles('Игрок X проиграл', screen)
+
+                    if check == 'Piece':
+                        game_over = True
+                        titles('Ничья', screen)
+
+
+    if not game_over:
+        for row in range(10):
+            for col in range(10):
+                if mas[row][col] == 'x':
+                    color = red
+                elif mas[row][col] == 'o':
+                    color = green
+                else:
+                    color = white
+                x = col * size_block + (col + 1) * margin
+                y = row * size_block + (row + 1) * margin
+                pygame.draw.rect(screen, color, (x, y, size_block, size_block))
+                if color == red:
+                    pygame.draw.line(screen, white, (x+5, y+5), (x + size_block-5, y + size_block-5), 3)
+                    pygame.draw.line(screen, white, (x + size_block - 5, y + 5), (x + 5, y + size_block - 5), 3)
+                elif color == green:
+                    pygame.draw.circle(screen, white, (x + size_block // 2, y + size_block // 2), size_block // 2-3, 3)
+
+    pygame.display.update()
