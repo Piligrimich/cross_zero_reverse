@@ -1,0 +1,56 @@
+
+mas = [(0, 1), (1, 4), (4, 1), (5, 5), (7, 2)]
+
+
+def distanceTown(arr):
+    distance = []
+    for i in range(1, len(arr)):
+        distance.append(((arr[i][0] - arr[0][0]) ** 2 + (arr[i][1] - arr[0][1]) ** 2) ** 0.5)
+
+    return distance
+
+
+def nearestTown(arr):
+    mini = arr[0]
+    index = 0
+    for i_step, el in enumerate(arr):
+        if el < mini:
+            mini = el
+            index = i_step
+    return index, mini
+
+
+answ = str(mas[0])
+answ += ' -> '
+end = mas[0]
+count = 0
+equally = len(mas)
+for i in range(len(mas)):
+    if len(mas) == 1:
+        mas.append(end)
+    distance = distanceTown(mas)
+
+    del mas[0]
+    index, mini = nearestTown(distance)
+
+    answ += str(mas[index])
+    count += mini
+    answ += '['
+    answ += str(count)
+    if i == equally-1:
+        answ += ']'
+        answ += ' = '
+        answ += str(count)
+    else:
+        answ += '] -> '
+
+    mass = []
+    mass.append(mas[index])
+    del mas[index]
+    for j in mas:
+        mass.append(j)
+
+    mas = mass
+
+
+print(answ)
